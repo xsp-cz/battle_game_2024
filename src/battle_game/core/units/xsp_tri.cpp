@@ -4,6 +4,8 @@
 #include "battle_game/core/game_core.h"
 #include "battle_game/graphics/graphics.h"
 
+#include <random>
+
 namespace battle_game::unit {
 
 namespace {
@@ -130,22 +132,30 @@ void Tri::TurretRotate() {
   }
 }
 
+std::mt19937_64 gen((unsigned)time(nullptr));
+std::normal_distribution<float> dist(0.0f, 1.0f);
+
 void Tri::Fire() {
   if (fire_count_down_ == 0) {
     auto player = game_core_->GetPlayer(player_id_);
     if (player) {
       auto &input_data = player->GetInputData();
       if (input_data.mouse_button_down[GLFW_MOUSE_BUTTON_LEFT]) {
-        auto velocity = Rotate(glm::vec2{0.0f, 20.0f}, turret_rotation_);
+        float bias = dist(gen);
+        auto velocity = Rotate(glm::vec2{0.0f, 20.0f}, turret_rotation_ + bias);
         GenerateBullet<bullet::CannonBall>(
             position_ + Rotate({0.0f, 1.2f}, turret_rotation_),
-            turret_rotation_, GetDamageScale(), velocity);
+            turret_rotation_ + dist(gen), GetDamageScale(), velocity);
+        bias = dist(gen);
+        velocity = Rotate(glm::vec2{0.0f, 20.0f}, turret_rotation_ + bias);
         GenerateBullet<bullet::CannonBall>(
             position_ + Rotate({0.0f, 2.0f}, turret_rotation_),
-            turret_rotation_, GetDamageScale(), velocity);
+            turret_rotation_ + dist(gen), GetDamageScale(), velocity);
+        bias = dist(gen);
+        velocity = Rotate(glm::vec2{0.0f, 20.0f}, turret_rotation_ + bias);
         GenerateBullet<bullet::CannonBall>(
             position_ + Rotate({0.0f, 2.8f}, turret_rotation_),
-            turret_rotation_, GetDamageScale(), velocity);
+            turret_rotation_ + dist(gen), GetDamageScale(), velocity);
         fire_count_down_ = kTickPerSecond;  // Fire interval 1 second.
       }
     }
